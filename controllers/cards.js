@@ -20,7 +20,9 @@ module.exports.getAllCards = (req, res) => {
 module.exports.createCard = (req, res) => {
   const { name, link } = req.body;
   Card.create({ name, link, owner: req.user._id })
-    .then(() => res.send({ message: `New card ${name} was created` }))
+    .then((newCard) => {
+      res.send(newCard);
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res
@@ -64,7 +66,9 @@ module.exports.likeCard = (req, res) => {
         { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
         { new: true },
       )
-        .then(() => res.send(`Card with ID ${cardId} was liked`))
+        .then((likedCard) => {
+          res.send(likedCard);
+        })
         .catch((err) => {
           res.status(ERROR_ANOTHER).send({
             message: `Error in like add process: ${err.message}`,
@@ -87,7 +91,7 @@ module.exports.dislikeCard = (req, res) => {
         { $pull: { likes: req.user._id } }, // добавить _id в массив, если его там нет
         { new: true },
       )
-        .then(() => res.send(`Card with ID ${cardId} was disliked`))
+        .then((dislikedCard) => res.send(dislikedCard))
         .catch((err) => {
           res.status(ERROR_ANOTHER).send({
             message: `Error with dislike process: ${err.message}`,

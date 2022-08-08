@@ -21,7 +21,7 @@ module.exports.getUserById = (req, res) => {
       if (user) {
         res.send(user);
       } else {
-        res.status(ERROR_NOT_FOUND).send({
+        res.status(ERROR_WRONG_DATA).send({
           message: `User with ID ${req.params.userid} not found`,
         });
       }
@@ -36,7 +36,9 @@ module.exports.getUserById = (req, res) => {
 module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
-    .then(() => res.send(`New user with name ${name} was created`))
+    .then((newUser) => {
+      res.send({ newUser });
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res
@@ -57,13 +59,20 @@ module.exports.updateUserInfo = (req, res) => {
       User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
         .then(() => {
           res.send({
-            message: `Info about user with name ${name} was updated`,
+            name,
+            about,
           });
         })
         .catch((err) => {
-          res.status(ERROR_ANOTHER).send({
-            message: `Error on server: ${err.message}`,
-          });
+          if (err.name === 'ValidationError') {
+            res
+              .status(ERROR_WRONG_DATA)
+              .send({ message: 'Wrong data for "update user info" process' });
+          } else {
+            res.status(ERROR_ANOTHER).send({
+              message: `Error on server: ${err.message}`,
+            });
+          }
         });
     } else {
       res.status(ERROR_NOT_FOUND).send({
@@ -80,9 +89,15 @@ module.exports.updateAvatar = (req, res) => {
       User.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
         .then(() => res.send('User avatar was updated'))
         .catch((err) => {
-          res.status(ERROR_ANOTHER).send({
-            message: `Error on server: ${err.message}`,
-          });
+          if (err.name === 'ValidationError') {
+            res
+              .status(ERROR_WRONG_DATA)
+              .send({ message: 'Wrong data for "update user avatar" process' });
+          } else {
+            res.status(ERROR_ANOTHER).send({
+              message: `Error on server: ${err.message}`,
+            });
+          }
         });
     } else {
       res.status(ERROR_NOT_FOUND).send({
