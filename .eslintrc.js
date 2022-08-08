@@ -4,14 +4,15 @@ module.exports = {
     commonjs: true,
     es2021: true,
   },
-  extends: ["eslint:recommended", "plugin:react/recommended"],
+  extends: ['airbnb-base'],
+  rules: {
+    'no-underscore-dangle': ['error', { allow: ['_id'] }],
+  },
   parserOptions: {
     ecmaFeatures: {
       jsx: true,
     },
-    ecmaVersion: "latest",
+    ecmaVersion: 'latest',
   },
-  plugins: ["react"],
-  rules: { allow: ["foo_", "_bar"] },
-  extends: "airbnb-base",
+  plugins: ['react'],
 };
