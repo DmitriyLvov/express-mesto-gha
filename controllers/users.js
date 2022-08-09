@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const User = require('../models/user');
 
 const ERROR_NOT_FOUND = 404;
@@ -15,28 +16,29 @@ module.exports.getAllUsers = (req, res) => {
 };
 
 module.exports.getUserById = (req, res) => {
-  // Поиск пользователя в mongoDB
-  User.findById(req.params.userid)
-    .then((user) => {
-      if (user) {
-        res.send(user);
-      } else {
-        res.status(ERROR_NOT_FOUND).send({
-          message: `User with ID ${req.params.userid} not found`,
-        });
-      }
-    })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res
-          .status(ERROR_WRONG_DATA)
-          .send({ message: 'Wrong data for "get user by id" process' });
-      } else {
+  const { userid } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(userid)) {
+    res
+      .status(ERROR_WRONG_DATA)
+      .send(`Wrong format. Data ${userid} is not ObjectID type.`);
+  } else {
+    // Поиск пользователя в mongoDB
+    User.findById(userid)
+      .then((user) => {
+        if (user) {
+          res.send(user);
+        } else {
+          res.status(ERROR_NOT_FOUND).send({
+            message: `User with ID ${userid} not found`,
+          });
+        }
+      })
+      .catch((err) => {
         res.status(ERROR_ANOTHER).send({
           message: `Error on server: ${err.message}`,
         });
-      }
-    });
+      });
+  }
 };
 
 module.exports.createUser = (req, res) => {

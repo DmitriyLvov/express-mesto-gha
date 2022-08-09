@@ -60,7 +60,7 @@ module.exports.deleteCard = (req, res) => {
 module.exports.likeCard = (req, res) => {
   // Проверка наличия карточки в БД перед выполнением действий
   const { cardId } = req.params;
-  if (mongoose.Types.ObjectId.isValid(cardId)) {
+  if (!mongoose.Types.ObjectId.isValid(cardId)) {
     res
       .status(ERROR_WRONG_DATA)
       .send(`Wrong format. Data ${cardId} is not ObjectID type.`);
@@ -91,7 +91,7 @@ module.exports.likeCard = (req, res) => {
 module.exports.dislikeCard = (req, res) => {
   // Проверка наличия карточки в БД перед выполнением действий
   const { cardId } = req.params;
-  if (mongoose.Types.ObjectId.isValid(cardId)) {
+  if (!mongoose.Types.ObjectId.isValid(cardId)) {
     res
       .status(ERROR_WRONG_DATA)
       .send(`Wrong format. Data ${cardId} is not ObjectID type.`);
