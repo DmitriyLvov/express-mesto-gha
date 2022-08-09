@@ -40,20 +40,29 @@ module.exports.createCard = (req, res) => {
 // Удаление карточки
 module.exports.deleteCard = (req, res) => {
   const { cardId } = req.params;
-  // Проверка наличия карточки в БД перед выполнением действий
-  Card.findById(cardId).then((card) => {
-    if (card) {
-      Card.findByIdAndRemove(cardId)
-        .then(() => res.send(`Card with ID ${cardId} was deleted`))
-        .catch((err) => {
-          res.status(ERROR_ANOTHER).send({
-            message: `Error in card deletion process: ${err.message}`,
+  // Валидация на тип данных ObjectID
+  if (!mongoose.Types.ObjectId.isValid(cardId)) {
+    res
+      .status(ERROR_WRONG_DATA)
+      .send({ message: `Wrong format. Data ${cardId} is not ObjectID type.` });
+  } else {
+    // Проверка наличия карточки в БД перед выполнением действий
+    Card.findById(cardId).then((card) => {
+      if (card) {
+        Card.findByIdAndRemove(cardId)
+          .then(() => {
+            res.send({ message: `Card with ID ${cardId} was deleted` });
+          })
+          .catch((err) => {
+            res.status(ERROR_ANOTHER).send({
+              message: `Error in card deletion process: ${err.message}`,
+            });
           });
-        });
-    } else {
-      res.status(ERROR_NOT_FOUND).send(`Card with ID ${cardId} not found.`);
-    }
-  });
+      } else {
+        res.status(ERROR_NOT_FOUND).send(`Card with ID ${cardId} not found.`);
+      }
+    });
+  }
 };
 
 // Добавление лайка карточке
@@ -63,7 +72,7 @@ module.exports.likeCard = (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(cardId)) {
     res
       .status(ERROR_WRONG_DATA)
-      .send(`Wrong format. Data ${cardId} is not ObjectID type.`);
+      .send({ message: `Wrong format. Data ${cardId} is not ObjectID type.` });
   } else {
     Card.findById(cardId).then((card) => {
       if (card) {
@@ -81,7 +90,9 @@ module.exports.likeCard = (req, res) => {
             });
           });
       } else {
-        res.status(ERROR_NOT_FOUND).send(`Card with ID ${cardId} not found.`);
+        res
+          .status(ERROR_NOT_FOUND)
+          .send({ message: `Card with ID ${cardId} not found.` });
       }
     });
   }
@@ -94,7 +105,7 @@ module.exports.dislikeCard = (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(cardId)) {
     res
       .status(ERROR_WRONG_DATA)
-      .send(`Wrong format. Data ${cardId} is not ObjectID type.`);
+      .send({ message: `Wrong format. Data ${cardId} is not ObjectID type.` });
   } else {
     Card.findById(cardId).then((card) => {
       if (card) {
@@ -110,7 +121,9 @@ module.exports.dislikeCard = (req, res) => {
             });
           });
       } else {
-        res.status(ERROR_NOT_FOUND).send(`Card with ID ${cardId} not found.`);
+        res
+          .status(ERROR_NOT_FOUND)
+          .send({ message: `Card with ID ${cardId} not found.` });
       }
     });
   }

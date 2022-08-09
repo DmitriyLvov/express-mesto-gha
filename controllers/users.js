@@ -20,7 +20,7 @@ module.exports.getUserById = (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(userid)) {
     res
       .status(ERROR_WRONG_DATA)
-      .send(`Wrong format. Data ${userid} is not ObjectID type.`);
+      .send({ message: `Wrong format. Data ${userid} is not ObjectID type.` });
   } else {
     // Поиск пользователя в mongoDB
     User.findById(userid)
