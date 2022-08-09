@@ -21,15 +21,21 @@ module.exports.getUserById = (req, res) => {
       if (user) {
         res.send(user);
       } else {
-        res.status(ERROR_WRONG_DATA).send({
+        res.status(ERROR_NOT_FOUND).send({
           message: `User with ID ${req.params.userid} not found`,
         });
       }
     })
     .catch((err) => {
-      res.status(ERROR_ANOTHER).send({
-        message: `Error on server: ${err.message}`,
-      });
+      if (err.name === 'ValidationError') {
+        res
+          .status(ERROR_WRONG_DATA)
+          .send({ message: 'Wrong data for "get user by id" process' });
+      } else {
+        res.status(ERROR_ANOTHER).send({
+          message: `Error on server: ${err.message}`,
+        });
+      }
     });
 };
 
@@ -37,7 +43,7 @@ module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
     .then((newUser) => {
-      res.send({ newUser });
+      res.send(newUser);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -54,32 +60,31 @@ module.exports.createUser = (req, res) => {
 
 module.exports.updateUserInfo = (req, res) => {
   const { name, about } = req.body;
-  User.findById(req.user._id).then((user) => {
-    if (user) {
-      User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
-        .then(() => {
-          res.send({
-            name,
-            about,
-          });
-        })
-        .catch((err) => {
-          if (err.name === 'ValidationError') {
-            res
-              .status(ERROR_WRONG_DATA)
-              .send({ message: 'Wrong data for "update user info" process' });
-          } else {
+  const newUser = new User({ name, about, avatar: 'doesnt matter' });
+  const validationResult = newUser.validateSync();
+  if (validationResult) {
+    res
+      .status(ERROR_WRONG_DATA)
+      .send({ message: 'Wrong data for "update user info" process' });
+  } else {
+    User.findById(req.user._id).then((user) => {
+      if (user) {
+        User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
+          .then((result) => {
+            res.send(result);
+          })
+          .catch((err) => {
             res.status(ERROR_ANOTHER).send({
               message: `Error on server: ${err.message}`,
             });
-          }
+          });
+      } else {
+        res.status(ERROR_NOT_FOUND).send({
+          message: `User with Id ${req.user._id} not found`,
         });
-    } else {
-      res.status(ERROR_NOT_FOUND).send({
-        message: `User with Id ${req.user._id} not found`,
-      });
-    }
-  });
+      }
+    });
+  }
 };
 
 module.exports.updateAvatar = (req, res) => {
@@ -87,7 +92,7 @@ module.exports.updateAvatar = (req, res) => {
   User.findById(req.user._id).then((user) => {
     if (user) {
       User.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
-        .then(() => res.send('User avatar was updated'))
+        .then((result) => res.send(result))
         .catch((err) => {
           if (err.name === 'ValidationError') {
             res

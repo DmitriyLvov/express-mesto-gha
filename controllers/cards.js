@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Card = require('../models/card');
 
 const ERROR_NOT_FOUND = 404;
@@ -59,46 +60,58 @@ module.exports.deleteCard = (req, res) => {
 module.exports.likeCard = (req, res) => {
   // Проверка наличия карточки в БД перед выполнением действий
   const { cardId } = req.params;
-  Card.findById(cardId).then((card) => {
-    if (card) {
-      Card.findByIdAndUpdate(
-        cardId,
-        { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
-        { new: true },
-      )
-        .then((likedCard) => {
-          res.send(likedCard);
-        })
-        .catch((err) => {
-          res.status(ERROR_ANOTHER).send({
-            message: `Error in like add process: ${err.message}`,
+  if (mongoose.Types.ObjectId.isValid(cardId)) {
+    res
+      .status(ERROR_WRONG_DATA)
+      .send(`Wrong format. Data ${cardId} is not ObjectID type.`);
+  } else {
+    Card.findById(cardId).then((card) => {
+      if (card) {
+        Card.findByIdAndUpdate(
+          cardId,
+          { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
+          { new: true },
+        )
+          .then((likedCard) => {
+            res.send(likedCard);
+          })
+          .catch((err) => {
+            res.status(ERROR_ANOTHER).send({
+              message: `Error in like add process: ${err.message}`,
+            });
           });
-        });
-    } else {
-      res.status(ERROR_NOT_FOUND).send(`Card with ID ${cardId} not found.`);
-    }
-  });
+      } else {
+        res.status(ERROR_NOT_FOUND).send(`Card with ID ${cardId} not found.`);
+      }
+    });
+  }
 };
 
 // Удаление лайка карточки
 module.exports.dislikeCard = (req, res) => {
   // Проверка наличия карточки в БД перед выполнением действий
   const { cardId } = req.params;
-  Card.findById(cardId).then((card) => {
-    if (card) {
-      Card.findByIdAndUpdate(
-        cardId,
-        { $pull: { likes: req.user._id } }, // добавить _id в массив, если его там нет
-        { new: true },
-      )
-        .then((dislikedCard) => res.send(dislikedCard))
-        .catch((err) => {
-          res.status(ERROR_ANOTHER).send({
-            message: `Error with dislike process: ${err.message}`,
+  if (mongoose.Types.ObjectId.isValid(cardId)) {
+    res
+      .status(ERROR_WRONG_DATA)
+      .send(`Wrong format. Data ${cardId} is not ObjectID type.`);
+  } else {
+    Card.findById(cardId).then((card) => {
+      if (card) {
+        Card.findByIdAndUpdate(
+          cardId,
+          { $pull: { likes: req.user._id } }, // добавить _id в массив, если его там нет
+          { new: true },
+        )
+          .then((dislikedCard) => res.send(dislikedCard))
+          .catch((err) => {
+            res.status(ERROR_ANOTHER).send({
+              message: `Error with dislike process: ${err.message}`,
+            });
           });
-        });
-    } else {
-      res.status(ERROR_NOT_FOUND).send(`Card with ID ${cardId} not found.`);
-    }
-  });
+      } else {
+        res.status(ERROR_NOT_FOUND).send(`Card with ID ${cardId} not found.`);
+      }
+    });
+  }
 };
