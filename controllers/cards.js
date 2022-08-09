@@ -59,7 +59,9 @@ module.exports.deleteCard = (req, res) => {
             });
           });
       } else {
-        res.status(ERROR_NOT_FOUND).send(`Card with ID ${cardId} not found.`);
+        res
+          .status(ERROR_NOT_FOUND)
+          .send({ message: `Card with ID ${cardId} not found.` });
       }
     });
   }

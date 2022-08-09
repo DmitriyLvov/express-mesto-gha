@@ -32,6 +32,11 @@ app.use((req, res, next) => {
 app.use(cardRouter);
 app.use(userRouter);
 
+// Страница 404
+app.get('*', (req, res) => {
+  res.status(404).send({ message: '404 Page not found' });
+});
+
 app.listen(PORT, () => {
   // Если всё работает, консоль покажет, какой порт приложение слушает
   // eslint-disable-next-line no-console
