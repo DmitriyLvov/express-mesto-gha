@@ -34,7 +34,7 @@ app.use(userRouter);
 
 // Страница 404
 app.get('*', (req, res) => {
-  res.status(404).send({ message: '404 Page not found' });
+  res.status(404).send(JSON.stringify({ message: '404 Page not found' }));
 });
 
 app.listen(PORT, () => {
