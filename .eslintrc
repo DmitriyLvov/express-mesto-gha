@@ -13,6 +13,5 @@
       "jsx": "true"
     },
     "ecmaVersion": "latest"
-  },
-  "plugins": ["react"]
+  }
 }
