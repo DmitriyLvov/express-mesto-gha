@@ -107,14 +107,15 @@ module.exports.updateUserInfo = (req, res) => {
     })
     .catch((err) => {
       // Если ID не формата ObjectID
-      if (err.name === 'CastError') {
-        res.status(ERROR_WRONG_DATA).send({
-          message: `Unvalid id: ${err.message}`,
+      if (err.name === 'ValidationError') {
+        res
+          .status(ERROR_WRONG_DATA)
+          .send({ message: `Wrong data for update user info: ${err.message}` });
+      } else {
+        res.status(ERROR_ANOTHER).send({
+          message: `Error in update user info process: ${err.message}`,
         });
       }
-      res.status(ERROR_ANOTHER).send({
-        message: `Error in update user info process: ${err.message}`,
-      });
     });
 };
 
@@ -162,10 +163,12 @@ module.exports.updateAvatar = (req, res) => {
     })
     .catch((err) => {
       // Если ID не формата ObjectID
-      if (err.name === 'CastError') {
-        res.status(ERROR_WRONG_DATA).send({
-          message: `Unvalid id: ${err.message}`,
-        });
+      if (err.name === 'ValidationError') {
+        res
+          .status(ERROR_WRONG_DATA)
+          .send({
+            message: `Wrong data for update user avatar: ${err.message}`,
+          });
       }
       res.status(ERROR_ANOTHER).send({
         message: `Error in update user info process: ${err.message}`,
