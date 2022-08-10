@@ -120,7 +120,7 @@ module.exports.dislikeCard = (req, res) => {
         });
       }
       res.status(ERROR_ANOTHER).send({
-        message: `Error in like add process: ${err.message}`,
+        message: `Error in dislike process: ${err.message}`,
       });
     });
 };

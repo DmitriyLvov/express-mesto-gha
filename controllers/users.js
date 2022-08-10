@@ -24,7 +24,7 @@ module.exports.getUserById = (req, res) => {
           .status(ERROR_NOT_FOUND)
           .send({ message: `User with ID ${userid} not found.` });
       } else {
-        res.send({ message: `User with ID ${userid} was deleted` });
+        res.send(user);
       }
     })
     .catch((err) => {
@@ -59,35 +59,6 @@ module.exports.createUser = (req, res) => {
     });
 };
 
-// module.exports.updateUserInfo = (req, res) => {
-//   const { name, about } = req.body;
-//   const newUser = new User({ name, about, avatar: 'doesnt matter' });
-//   const validationResult = newUser.validateSync();
-//   if (validationResult) {
-//     res
-//       .status(ERROR_WRONG_DATA)
-//       .send({ message: 'Wrong data for "update user info" process' });
-//   } else {
-//     User.findById(req.user._id).then((user) => {
-//       if (user) {
-//         User.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
-//           .then((result) => {
-//             res.send(result);
-//           })
-//           .catch((err) => {
-//             res.status(ERROR_ANOTHER).send({
-//               message: `Error on server: ${err.message}`,
-//             });
-//           });
-//       } else {
-//         res.status(ERROR_NOT_FOUND).send({
-//           message: `User with Id ${req.user._id} not found`,
-//         });
-//       }
-//     });
-//   }
-// };
-
 module.exports.updateUserInfo = (req, res) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
@@ -119,31 +90,6 @@ module.exports.updateUserInfo = (req, res) => {
     });
 };
 
-// module.exports.updateAvatar = (req, res) => {
-//   const { avatar } = req.body;
-//   User.findById(req.user._id).then((user) => {
-//     if (user) {
-//       User.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
-//         .then((result) => res.send(result))
-//         .catch((err) => {
-//           if (err.name === 'ValidationError') {
-//             res
-//               .status(ERROR_WRONG_DATA)
-//               .send({ message: 'Wrong data for "update user avatar" process' });
-//           } else {
-//             res.status(ERROR_ANOTHER).send({
-//               message: `Error on server: ${err.message}`,
-//             });
-//           }
-//         });
-//     } else {
-//       res.status(ERROR_NOT_FOUND).send({
-//         message: `User with Id ${req.user._id} not found`,
-//       });
-//     }
-//   });
-// };
-
 module.exports.updateAvatar = (req, res) => {
   const { avatar } = req.body;
   User.findByIdAndUpdate(
@@ -171,7 +117,7 @@ module.exports.updateAvatar = (req, res) => {
           });
       }
       res.status(ERROR_ANOTHER).send({
-        message: `Error in update user info process: ${err.message}`,
+        message: `Error in update user avatar process: ${err.message}`,
       });
     });
 };
