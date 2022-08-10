@@ -20,9 +20,9 @@ module.exports.getUserById = (req, res) => {
     .then((user) => {
       // Если объект по ID не найден
       if (!user) {
-        res
-          .status(ERROR_NOT_FOUND)
-          .send({ message: `User with ID ${userid} not found.` });
+        res.status(ERROR_NOT_FOUND).send({
+          message: `User with ID ${userid} not found.`,
+        });
       } else {
         res.send(user);
       }
@@ -33,10 +33,11 @@ module.exports.getUserById = (req, res) => {
         res.status(ERROR_WRONG_DATA).send({
           message: `Unvalid id: ${err.message}`,
         });
+      } else {
+        res.status(ERROR_ANOTHER).send({
+          message: `Error in get user by id process: ${err.message}`,
+        });
       }
-      res.status(ERROR_ANOTHER).send({
-        message: `Error in get user by id process: ${err.message}`,
-      });
     });
 };
 
@@ -48,9 +49,9 @@ module.exports.createUser = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res
-          .status(ERROR_WRONG_DATA)
-          .send({ message: 'Wrong data for new user creation process' });
+        res.status(ERROR_WRONG_DATA).send({
+          message: 'Wrong data for new user creation process',
+        });
       } else {
         res.status(ERROR_ANOTHER).send({
           message: `Error on server: ${err.message}`,
@@ -69,9 +70,9 @@ module.exports.updateUserInfo = (req, res) => {
     .then((user) => {
       // Если объект по ID не найден
       if (!user) {
-        res
-          .status(ERROR_NOT_FOUND)
-          .send({ message: `User with ID ${req.user._id} not found.` });
+        res.status(ERROR_NOT_FOUND).send({
+          message: `User with ID ${req.user._id} not found.`,
+        });
       } else {
         res.send(user);
       }
@@ -79,9 +80,9 @@ module.exports.updateUserInfo = (req, res) => {
     .catch((err) => {
       // Если ID не формата ObjectID
       if (err.name === 'ValidationError') {
-        res
-          .status(ERROR_WRONG_DATA)
-          .send({ message: `Wrong data for update user info: ${err.message}` });
+        res.status(ERROR_WRONG_DATA).send({
+          message: `Wrong data for update user info: ${err.message}`,
+        });
       } else {
         res.status(ERROR_ANOTHER).send({
           message: `Error in update user info process: ${err.message}`,
@@ -100,9 +101,9 @@ module.exports.updateAvatar = (req, res) => {
     .then((user) => {
       // Если объект по ID не найден
       if (!user) {
-        res
-          .status(ERROR_NOT_FOUND)
-          .send({ message: `User with ID ${req.user._id} not found.` });
+        res.status(ERROR_NOT_FOUND).send({
+          message: `User with ID ${req.user._id} not found.`,
+        });
       } else {
         res.send(user);
       }
@@ -110,14 +111,13 @@ module.exports.updateAvatar = (req, res) => {
     .catch((err) => {
       // Если ID не формата ObjectID
       if (err.name === 'ValidationError') {
-        res
-          .status(ERROR_WRONG_DATA)
-          .send({
-            message: `Wrong data for update user avatar: ${err.message}`,
-          });
+        res.status(ERROR_WRONG_DATA).send({
+          message: `Wrong data for update user avatar: ${err.message}`,
+        });
+      } else {
+        res.status(ERROR_ANOTHER).send({
+          message: `Error in update user avatar process: ${err.message}`,
+        });
       }
-      res.status(ERROR_ANOTHER).send({
-        message: `Error in update user avatar process: ${err.message}`,
-      });
     });
 };

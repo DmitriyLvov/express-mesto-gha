@@ -25,9 +25,9 @@ module.exports.createCard = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res
-          .status(ERROR_WRONG_DATA)
-          .send({ message: 'Wrong data for new card creation process' });
+        res.status(ERROR_WRONG_DATA).send({
+          message: 'Wrong data for new card creation process',
+        });
       } else {
         res.status(ERROR_ANOTHER).send({
           message: `Error in card creation process: ${err.message}`,
@@ -56,10 +56,11 @@ module.exports.deleteCard = (req, res) => {
         res.status(ERROR_WRONG_DATA).send({
           message: `Unvalid id: ${err.message}`,
         });
+      } else {
+        res.status(ERROR_ANOTHER).send({
+          message: `Error in card deletion process: ${err.message}`,
+        });
       }
-      res.status(ERROR_ANOTHER).send({
-        message: `Error in card deletion process: ${err.message}`,
-      });
     });
 };
 
@@ -74,9 +75,9 @@ module.exports.likeCard = (req, res) => {
     .then((card) => {
       // Если объект по ID не найден
       if (!card) {
-        res
-          .status(ERROR_NOT_FOUND)
-          .send({ message: `Card with ID ${cardId} not found.` });
+        res.status(ERROR_NOT_FOUND).send({
+          message: `Card with ID ${cardId} not found.`,
+        });
       } else {
         res.send(card);
       }
@@ -87,10 +88,11 @@ module.exports.likeCard = (req, res) => {
         res.status(ERROR_WRONG_DATA).send({
           message: `Unvalid id: ${err.message}`,
         });
+      } else {
+        res.status(ERROR_ANOTHER).send({
+          message: `Error in like add process: ${err.message}`,
+        });
       }
-      res.status(ERROR_ANOTHER).send({
-        message: `Error in like add process: ${err.message}`,
-      });
     });
 };
 
@@ -105,9 +107,9 @@ module.exports.dislikeCard = (req, res) => {
     .then((card) => {
       // Если объект по ID не найден
       if (!card) {
-        res
-          .status(ERROR_NOT_FOUND)
-          .send({ message: `Card with ID ${cardId} not found.` });
+        res.status(ERROR_NOT_FOUND).send({
+          message: `Card with ID ${cardId} not found.`,
+        });
       } else {
         res.send(card);
       }
@@ -118,9 +120,10 @@ module.exports.dislikeCard = (req, res) => {
         res.status(ERROR_WRONG_DATA).send({
           message: `Unvalid id: ${err.message}`,
         });
+      } else {
+        res.status(ERROR_ANOTHER).send({
+          message: `Error in dislike process: ${err.message}`,
+        });
       }
-      res.status(ERROR_ANOTHER).send({
-        message: `Error in dislike process: ${err.message}`,
-      });
     });
 };
