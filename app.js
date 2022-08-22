@@ -31,18 +31,19 @@ app.post('/signin', celebrate({
 }), login);
 app.post('/signup', celebrate({
   body: Joi.object().keys({
-    name: Joi.string().required().min(2).max(30),
-    about: Joi.string().required().min(2).max(30),
-    avatar: Joi.string().required(),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string(),
     email: Joi.string().required(),
     password: Joi.string().required(),
   }),
 }), createUser);
-app.use(celebrate({
-  headers: Joi.object().keys({
-    authorization: Joi.string().required(),
-  }).unknown(true),
-}), auth);
+app.use(auth);
+// app.use(celebrate({
+//   headers: Joi.object().keys({
+//     authorization: Joi.string().required(),
+//   }).unknown(true),
+// }), auth);
 // Защищенные роуты
 app.use(cardRouter);
 app.use(userRouter);

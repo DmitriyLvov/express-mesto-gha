@@ -42,7 +42,11 @@ module.exports.createUser = (req, res, next) => {
       email,
       password: hash,
     })
-      .then((newUser) => res.send(newUser))
+      .then((newUser) => {
+        const result = { ...newUser._doc };
+        delete result.password;
+        return res.send(result);
+      })
       .catch(next);
   });
 };

@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const { isEmail } = require('validator');
 const bcrypt = require('bcryptjs');
 const WrongDataError = require('../errors/wrong-data-err');
+const NotAccessError = require('../errors/not-access-err');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -52,11 +53,11 @@ userSchema.statics.findUserByCredentials = function checkEmail(email, password) 
   return this.findOne({ email }).select('+password').then((user) => {
     // Пользователь по email не найден
     if (!user) {
-      return Promise.reject(new WrongDataError('Wrong email or password'));
+      return Promise.reject(new NotAccessError('Wrong email or password'));
     }
     return bcrypt.compare(password, user.password).then((res) => {
       if (!res) {
-        return Promise.reject(new WrongDataError('Wrong email or password'));
+        return Promise.reject(new NotAccessError('Wrong email or password'));
       }
       return Promise.resolve({ _id: user._id });
     });
