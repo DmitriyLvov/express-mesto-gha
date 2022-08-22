@@ -1,0 +1,11 @@
+const ERROR_NOT_FOUND = 404;
+const ERROR_NOT_ACCESS = 401;
+const ERROR_WRONG_DATA = 400;
+const ERROR_ANOTHER = 500;
+
+module.exports.errors = {
+  ERROR_NOT_FOUND,
+  ERROR_NOT_ACCESS,
+  ERROR_WRONG_DATA,
+  ERROR_ANOTHER,
+};

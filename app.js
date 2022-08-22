@@ -1,8 +1,14 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const { celebrate, Joi } = require('celebrate');
+const { errors } = require('celebrate');
 const bodyParser = require('body-parser');
+const { auth } = require('./middlewares/auth');
 const cardRouter = require('./routes/card');
 const userRouter = require('./routes/user');
+const { login, createUser } = require('./controllers/users');
+
+// require('dotenv').config();
 
 // Слушаем 3000 порт
 const { PORT = 3000 } = process.env;
@@ -15,22 +21,53 @@ app.use(express.json());
 app.use(bodyParser.json());
 
 mongoose.connect('mongodb://localhost:27017/mestodb');
-// mongoose.connect('mongodb://localhost:27017/mestodb', {
-//   useNewUrlParser: true,
-//   useCreateIndex: true,
-//   useFindAndModify: false,
-// });
 
-app.use((req, res, next) => {
-  req.user = {
-    _id: '62ee72f8779d39f326818a4e', // вставьте сюда _id созданного в предыдущем пункте пользователя
-  };
-
-  next();
-});
-
+// Незащищенные роуты
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required(),
+    password: Joi.string().required(),
+  }),
+}), login);
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    about: Joi.string().required().min(2).max(30),
+    avatar: Joi.string().required(),
+    email: Joi.string().required(),
+    password: Joi.string().required(),
+  }),
+}), createUser);
+app.use(celebrate({
+  headers: Joi.object().keys({
+    authorization: Joi.string().required(),
+  }).unknown(true),
+}), auth);
+// Защищенные роуты
 app.use(cardRouter);
 app.use(userRouter);
+// Ощибки авторизации
+app.use(errors());
+
+// Центральная обработка ошибок
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  if (err.code === 11000) {
+    return res.status(409).send({ message: 'This email existed. You need to use unique email.' });
+  }
+  if (err.errors) {
+    const { message, reason } = Object.values(err.errors)[0].properties;
+    return res.status(reason.statusCode).send({ message });
+  }
+  if (!err.statusCode) {
+    if (err.name === 'ValidationError' || err.name === 'CastError') {
+      return res.status(401).send({ message: 'Wrong data' });
+    }
+    return res.status(500).send({ message: 'Error on server' });
+  }
+  // Обработка пользовательских ошибок
+  return res.status(err.statusCode).send({ message: err.message });
+});
 
 // Страница 404
 app.use((req, res) => {

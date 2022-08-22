@@ -1,123 +1,101 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const { other } = require('../constants/other');
+const NotFoundError = require('../errors/not-found-err');
 
-const ERROR_NOT_FOUND = 404;
-const ERROR_WRONG_DATA = 400;
-const ERROR_ANOTHER = 500;
+const { DEV_SECRET } = other;
 
-module.exports.getAllUsers = (req, res) => {
+module.exports.getAllUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch((err) => {
-      res.status(ERROR_ANOTHER).send({
-        message: `Error on server: ${err.message}`,
-      });
-    });
+    .catch(next);
 };
 
-module.exports.getUserById = (req, res) => {
+module.exports.getUserById = (req, res, next) => {
   const { userid } = req.params;
   User.findById(userid)
     .then((user) => {
       // Если объект по ID не найден
       if (!user) {
-        res.status(ERROR_NOT_FOUND).send({
-          message: `User with ID ${userid} not found.`,
-        });
+        throw new NotFoundError(`User with ID ${userid} not found.`);
       } else {
         res.send(user);
       }
     })
-    .catch((err) => {
-      // Если ID не формата ObjectID
-      if (err.name === 'CastError') {
-        res.status(ERROR_WRONG_DATA).send({
-          message: `Unvalid id: ${err.message}`,
-        });
-      } else {
-        res.status(ERROR_ANOTHER).send({
-          message: `Error in get user by id process: ${err.message}`,
-        });
-      }
-    });
+    .catch(next);
 };
 
-module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
-    .then((newUser) => {
-      res.send(newUser);
+module.exports.createUser = (req, res, next) => {
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
+  return bcrypt.hash(password, 10).then((hash) => {
+    User.create({
+      name,
+      about,
+      avatar,
+      email,
+      password: hash,
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(ERROR_WRONG_DATA).send({
-          message: 'Wrong data for new user creation process',
-        });
-      } else {
-        res.status(ERROR_ANOTHER).send({
-          message: `Error on server: ${err.message}`,
-        });
-      }
-    });
+      .then((newUser) => res.send(newUser))
+      .catch(next);
+  });
 };
 
-module.exports.updateUserInfo = (req, res) => {
+module.exports.getUserInfo = (req, res, next) => {
+  const { _id } = req.user;
+  User.findById(_id)
+    .then((user) => {
+      if (!user) {
+        throw new NotFoundError(`User with ID ${_id} not found.`);
+      }
+      res.send(user);
+    })
+    .catch(next);
+};
+
+module.exports.updateUserInfo = (req, res, next) => {
   const { name, about } = req.body;
-  User.findByIdAndUpdate(
-    req.user._id,
-    { name, about },
-    { new: true, runValidators: true },
-  )
+  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       // Если объект по ID не найден
       if (!user) {
-        res.status(ERROR_NOT_FOUND).send({
-          message: `User with ID ${req.user._id} not found.`,
-        });
+        throw new NotFoundError(`User with ID ${req.user._id} not found.`);
       } else {
         res.send(user);
       }
     })
-    .catch((err) => {
-      // Если ID не формата ObjectID
-      if (err.name === 'ValidationError') {
-        res.status(ERROR_WRONG_DATA).send({
-          message: `Wrong data for update user info: ${err.message}`,
-        });
-      } else {
-        res.status(ERROR_ANOTHER).send({
-          message: `Error in update user info process: ${err.message}`,
-        });
-      }
-    });
+    .catch(next);
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
-  User.findByIdAndUpdate(
-    req.user._id,
-    { avatar },
-    { new: true, runValidators: true },
-  )
+  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       // Если объект по ID не найден
       if (!user) {
-        res.status(ERROR_NOT_FOUND).send({
-          message: `User with ID ${req.user._id} not found.`,
-        });
+        throw new NotFoundError(`User with ID ${req.user._id} not found.`);
       } else {
         res.send(user);
       }
     })
-    .catch((err) => {
-      // Если ID не формата ObjectID
-      if (err.name === 'ValidationError') {
-        res.status(ERROR_WRONG_DATA).send({
-          message: `Wrong data for update user avatar: ${err.message}`,
-        });
-      } else {
-        res.status(ERROR_ANOTHER).send({
-          message: `Error in update user avatar process: ${err.message}`,
-        });
-      }
-    });
+    .catch(next);
+};
+
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then(({ _id }) => {
+      // const { NODE_ENV, JWT_SECRET } = process.env;
+      // const token = jwt.sign({ _id }, NODE_ENV === 'production' ?
+      // JWT_SECRET : DEV_SECRET, { expiresIn: '7d' });
+      const token = jwt.sign({ _id }, DEV_SECRET, { expiresIn: '7d' });
+      res.cookie('jwt', token, { maxAge: 60000 * 60 * 24 * 7, httpOnly: true }).end();
+    })
+    .catch(next);
 };

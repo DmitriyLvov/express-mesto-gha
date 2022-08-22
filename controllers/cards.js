@@ -1,71 +1,46 @@
 const Card = require('../models/card');
-
-const ERROR_NOT_FOUND = 404;
-const ERROR_WRONG_DATA = 400;
-const ERROR_ANOTHER = 500;
+const NotFoundError = require('../errors/not-found-err');
+const ForbidError = require('../errors/forbid-err');
 
 // Возврат всех карточек из БД
-module.exports.getAllCards = (req, res) => {
+module.exports.getAllCards = (req, res, next) => {
   Card.find({})
     .populate('owner')
     .then((cards) => res.send(cards))
-    .catch((err) => {
-      res.status(ERROR_ANOTHER).send({
-        message: `Error in "get all cards" process: ${err.message}`,
-      });
-    });
+    .catch(next);
 };
 
 // Создание новой карточки
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   Card.create({ name, link, owner: req.user._id })
     .then((newCard) => {
       res.send(newCard);
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(ERROR_WRONG_DATA).send({
-          message: 'Wrong data for new card creation process',
-        });
-      } else {
-        res.status(ERROR_ANOTHER).send({
-          message: `Error in card creation process: ${err.message}`,
-        });
-      }
-    });
+    .catch(next);
 };
 
 // Удаление карточки
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   const { cardId } = req.params;
-  Card.findByIdAndRemove(cardId)
+  Card.findById(cardId)
     .then((card) => {
       // Если объект по ID не найден
       if (!card) {
-        res
-          .status(ERROR_NOT_FOUND)
-          .send({ message: `Card with ID ${cardId} not found.` });
-      } else {
-        res.send({ message: `Card with ID ${cardId} was deleted` });
+        throw new NotFoundError(`Card with ID ${cardId} not found.`);
       }
+      if (card.owner.toString() !== req.user._id) {
+        throw new ForbidError('You can not delete cards, if you are not owner');
+      }
+      return Card.findByIdAndDelete(cardId)
+        .then(() => res.send({ message: `Card with ID ${cardId} deleted.` }))
+        .catch(next);
     })
-    .catch((err) => {
-      // Если ID не формата ObjectID
-      if (err.name === 'CastError') {
-        res.status(ERROR_WRONG_DATA).send({
-          message: `Unvalid id: ${err.message}`,
-        });
-      } else {
-        res.status(ERROR_ANOTHER).send({
-          message: `Error in card deletion process: ${err.message}`,
-        });
-      }
-    });
+    .catch(next);
 };
 
 // Добавление лайка карточке
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   const { cardId } = req.params;
   Card.findByIdAndUpdate(
     cardId,
@@ -75,29 +50,16 @@ module.exports.likeCard = (req, res) => {
     .then((card) => {
       // Если объект по ID не найден
       if (!card) {
-        res.status(ERROR_NOT_FOUND).send({
-          message: `Card with ID ${cardId} not found.`,
-        });
+        throw new NotFoundError(`Card with ID ${cardId} not found.`);
       } else {
         res.send(card);
       }
     })
-    .catch((err) => {
-      // Если ID не формата ObjectID
-      if (err.name === 'CastError') {
-        res.status(ERROR_WRONG_DATA).send({
-          message: `Unvalid id: ${err.message}`,
-        });
-      } else {
-        res.status(ERROR_ANOTHER).send({
-          message: `Error in like add process: ${err.message}`,
-        });
-      }
-    });
+    .catch(next);
 };
 
 // Удаление лайка карточке
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   const { cardId } = req.params;
   Card.findByIdAndUpdate(
     cardId,
@@ -107,23 +69,10 @@ module.exports.dislikeCard = (req, res) => {
     .then((card) => {
       // Если объект по ID не найден
       if (!card) {
-        res.status(ERROR_NOT_FOUND).send({
-          message: `Card with ID ${cardId} not found.`,
-        });
+        throw new NotFoundError(`Card with ID ${cardId} not found.`);
       } else {
         res.send(card);
       }
     })
-    .catch((err) => {
-      // Если ID не формата ObjectID
-      if (err.name === 'CastError') {
-        res.status(ERROR_WRONG_DATA).send({
-          message: `Unvalid id: ${err.message}`,
-        });
-      } else {
-        res.status(ERROR_ANOTHER).send({
-          message: `Error in dislike process: ${err.message}`,
-        });
-      }
-    });
+    .catch(next);
 };
