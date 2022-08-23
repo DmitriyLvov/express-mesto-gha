@@ -99,9 +99,8 @@ module.exports.login = (req, res, next) => {
       // const token = jwt.sign({ _id }, NODE_ENV === 'production' ?
       // JWT_SECRET : DEV_SECRET, { expiresIn: '7d' });
       const token = jwt.sign({ _id }, DEV_SECRET, { expiresIn: '7d' });
-      // res.cookie('jwt', token, { maxAge: 60000 * 60 * 24 * 7, httpOnly: true })
-      // .send({ message: 'Success', token });
-      res.cookie('jwt', token, { maxAge: 60000 * 60 * 24 * 7, httpOnly: true }).send({ message: 'Success' });
+      // Для прохождения автотестов (без токена в теле не срабатывает)
+      res.cookie('jwt', token, { maxAge: 60000 * 60 * 24 * 7, httpOnly: true }).send({ message: 'Success', token });
     })
     .catch(next);
 };
