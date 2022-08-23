@@ -1,5 +1,6 @@
 {
   "name": "express-mesto-gha",
+  "author": "Dmitriy Lvov",
   "version": "0.1.0",
   "private": false,
   "homepage": "https://github.com/DmitriyLvov/express-mesto-gha.git",

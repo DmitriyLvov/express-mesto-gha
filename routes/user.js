@@ -14,7 +14,7 @@ userRouter.get('/users/me', getUserInfo);
 
 userRouter.get('/users/:userid', celebrate({
   params: Joi.object().keys({
-    userid: Joi.string().min(24).required(),
+    userid: Joi.string().hex().required().length(24),
   }),
 }), getUserById);
 
@@ -27,7 +27,7 @@ userRouter.patch('/users/me', celebrate({
 
 userRouter.patch('/users/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().pattern(/https?:\/\/[www]?\.?[a-z0-9-._~:/?#[\]@!$&'()*+,;=]+/i),
+    avatar: Joi.string().required().pattern(/https?:\/\/[www]?\.?[a-z0-9-._~:/?#[\]@!$&'()*+,;=]+/i),
   }),
 }), updateAvatar);
 

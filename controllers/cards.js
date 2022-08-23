@@ -1,13 +1,16 @@
 const Card = require('../models/card');
 const NotFoundError = require('../errors/not-found-err');
 const ForbidError = require('../errors/forbid-err');
+const AnotherError = require('../errors/another-err');
+const WrongDataError = require('../errors/wrong-data-err');
 
+const CREATED_STATUS = 201;
 // Возврат всех карточек из БД
 module.exports.getAllCards = (req, res, next) => {
   Card.find({})
     .populate('owner')
     .then((cards) => res.send(cards))
-    .catch(next);
+    .catch((err) => next(new AnotherError(`Error in "get all cards" process: ${err.message}`)));
 };
 
 // Создание новой карточки
@@ -15,9 +18,15 @@ module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   Card.create({ name, link, owner: req.user._id })
     .then((newCard) => {
-      res.send(newCard);
+      res.status(CREATED_STATUS).send(newCard);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new WrongDataError('Wrong data for new card creation process'));
+      } else {
+        next(new AnotherError(`Error in card creation process: ${err.message}`));
+      }
+    });
 };
 
 // Удаление карточки
@@ -33,10 +42,9 @@ module.exports.deleteCard = (req, res, next) => {
         throw new ForbidError('You can not delete cards, if you are not owner');
       }
       return Card.findByIdAndDelete(cardId)
-        .then(() => res.send({ message: `Card with ID ${cardId} deleted.` }))
-        .catch(next);
+        .then(() => res.send({ message: `Card with ID ${cardId} deleted.` }));
     })
-    .catch(next);
+    .catch((err) => next(new AnotherError(`Error in card deletion process: ${err.message}`)));
 };
 
 // Добавление лайка карточке
@@ -55,7 +63,7 @@ module.exports.likeCard = (req, res, next) => {
         res.send(card);
       }
     })
-    .catch(next);
+    .catch((err) => next(new AnotherError(`Error in card add process: ${err.message}`)));
 };
 
 // Удаление лайка карточке
@@ -74,5 +82,5 @@ module.exports.dislikeCard = (req, res, next) => {
         res.send(card);
       }
     })
-    .catch(next);
+    .catch((err) => next(new AnotherError(`Error in dislike process: ${err.message}`)));
 };

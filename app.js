@@ -7,6 +7,7 @@ const { auth } = require('./middlewares/auth');
 const cardRouter = require('./routes/card');
 const userRouter = require('./routes/user');
 const { login, createUser } = require('./controllers/users');
+const NotFoundError = require('./errors/not-found-err');
 
 // require('dotenv').config();
 
@@ -50,8 +51,12 @@ app.use(userRouter);
 // Ощибки авторизации
 app.use(errors());
 
+// Страница 404
+app.use((req, res, next) => {
+  next(new NotFoundError('404 Page not found'));
+});
+
 // Центральная обработка ошибок
-// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   if (err.code === 11000) {
     return res.status(409).send({ message: 'This email existed. You need to use unique email.' });
@@ -61,22 +66,14 @@ app.use((err, req, res, next) => {
     return res.status(reason.statusCode).send({ message });
   }
   if (!err.statusCode) {
-    if (err.name === 'ValidationError' || err.name === 'CastError') {
-      return res.status(401).send({ message: 'Wrong data' });
-    }
     return res.status(500).send({ message: 'Error on server' });
   }
   // Обработка пользовательских ошибок
-  return res.status(err.statusCode).send({ message: err.message });
-});
-
-// Страница 404
-app.use((req, res) => {
-  res.status(404).send({ message: '404 Page not found' });
+  res.status(err.statusCode).send({ message: err.message });
+  return next();
 });
 
 app.listen(PORT, () => {
   // Если всё работает, консоль покажет, какой порт приложение слушает
-  // eslint-disable-next-line no-console
-  console.log(`App listening on port ${PORT}`);
+  process.stdout.write(`App listening on port ${PORT}\n`);
 });

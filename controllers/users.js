@@ -1,15 +1,17 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const { other } = require('../constants/other');
+const { system } = require('../constants/system');
 const NotFoundError = require('../errors/not-found-err');
+const AnotherError = require('../errors/another-err');
 
-const { DEV_SECRET } = other;
+const { DEV_SECRET } = system;
+const CREATED_STATUS = 201;
 
 module.exports.getAllUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch(next);
+    .catch((err) => next(new AnotherError(`Error "in get all users" process: ${err.message}`)));
 };
 
 module.exports.getUserById = (req, res, next) => {
@@ -23,7 +25,7 @@ module.exports.getUserById = (req, res, next) => {
         res.send(user);
       }
     })
-    .catch(next);
+    .catch((err) => next(new AnotherError(`Error in "get user by id" process: ${err.message}`)));
 };
 
 module.exports.createUser = (req, res, next) => {
@@ -45,9 +47,9 @@ module.exports.createUser = (req, res, next) => {
       .then((newUser) => {
         const result = { ...newUser._doc };
         delete result.password;
-        return res.send(result);
+        return res.status(CREATED_STATUS).send(result);
       })
-      .catch(next);
+      .catch((err) => next(new AnotherError(`Error in "create user" process: ${err.message}`)));
   });
 };
 
@@ -60,7 +62,7 @@ module.exports.getUserInfo = (req, res, next) => {
       }
       res.send(user);
     })
-    .catch(next);
+    .catch((err) => next(new AnotherError(`Error in "get user info" process: ${err.message}`)));
 };
 
 module.exports.updateUserInfo = (req, res, next) => {
@@ -74,7 +76,7 @@ module.exports.updateUserInfo = (req, res, next) => {
         res.send(user);
       }
     })
-    .catch(next);
+    .catch((err) => next(new AnotherError(`Error in "update user info" process: ${err.message}`)));
 };
 
 module.exports.updateAvatar = (req, res, next) => {
@@ -88,7 +90,7 @@ module.exports.updateAvatar = (req, res, next) => {
         res.send(user);
       }
     })
-    .catch(next);
+    .catch((err) => next(new AnotherError(`Error in "update user avatar" process: ${err.message}`)));
 };
 
 module.exports.login = (req, res, next) => {
@@ -99,8 +101,7 @@ module.exports.login = (req, res, next) => {
       // const token = jwt.sign({ _id }, NODE_ENV === 'production' ?
       // JWT_SECRET : DEV_SECRET, { expiresIn: '7d' });
       const token = jwt.sign({ _id }, DEV_SECRET, { expiresIn: '7d' });
-      // Для прохождения автотестов (без токена в теле не срабатывает)
-      res.cookie('jwt', token, { maxAge: 60000 * 60 * 24 * 7, httpOnly: true }).send({ message: 'Success', token });
+      res.send({ message: 'Success', token });
     })
-    .catch(next);
+    .catch((err) => next(new AnotherError(`Error in login process: ${err.message}`)));
 };

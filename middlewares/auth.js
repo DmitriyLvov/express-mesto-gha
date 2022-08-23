@@ -1,8 +1,8 @@
 const jwt = require('jsonwebtoken');
-const { other } = require('../constants/other');
+const { system } = require('../constants/system');
 const NotAccessError = require('../errors/not-access-err');
 
-const { DEV_SECRET } = other;
+const { DEV_SECRET } = system;
 
 module.exports.auth = (req, res, next) => {
   const { authorization } = req.headers;
