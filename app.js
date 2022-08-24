@@ -58,10 +58,10 @@ app.use((req, res, next) => {
 
 // Центральная обработка ошибок
 app.use((err, req, res, next) => {
-  if (err.errors) {
-    const { message, reason } = Object.values(err.errors)[0].properties;
-    return res.status(reason.statusCode).send({ message });
-  }
+  // if (err.errors) {
+  //   const { message, reason } = Object.values(err.errors)[0].properties;
+  //   return res.status(reason.statusCode).send({ message });
+  // }
   const { statusCode = 500, message } = err;
   res.status(err.statusCode).send({ message: statusCode === 500 ? 'Error on server' : message });
   return next();
