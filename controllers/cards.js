@@ -10,7 +10,7 @@ module.exports.getAllCards = (req, res, next) => {
   Card.find({})
     .populate('owner')
     .then((cards) => res.send(cards))
-    .catch((err) => next(new AnotherError(`Error in "get all cards" process: ${err.message}`)));
+    .catch(next);
 };
 
 // Создание новой карточки
@@ -44,7 +44,7 @@ module.exports.deleteCard = (req, res, next) => {
       return Card.findByIdAndDelete(cardId)
         .then(() => res.send({ message: `Card with ID ${cardId} deleted.` }));
     })
-    .catch((err) => next(new AnotherError(`Error in card deletion process: ${err.message}`)));
+    .catch(next);
 };
 
 // Добавление лайка карточке
@@ -63,7 +63,7 @@ module.exports.likeCard = (req, res, next) => {
         res.send(card);
       }
     })
-    .catch((err) => next(new AnotherError(`Error in card add process: ${err.message}`)));
+    .catch(next);
 };
 
 // Удаление лайка карточке
@@ -82,5 +82,5 @@ module.exports.dislikeCard = (req, res, next) => {
         res.send(card);
       }
     })
-    .catch((err) => next(new AnotherError(`Error in dislike process: ${err.message}`)));
+    .catch(next);
 };

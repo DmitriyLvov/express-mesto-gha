@@ -65,11 +65,8 @@ app.use((err, req, res, next) => {
     const { message, reason } = Object.values(err.errors)[0].properties;
     return res.status(reason.statusCode).send({ message });
   }
-  if (!err.statusCode) {
-    return res.status(500).send({ message: 'Error on server' });
-  }
-  // Обработка пользовательских ошибок
-  res.status(err.statusCode).send({ message: err.message });
+  const { statusCode = 500, message } = err;
+  res.status(err.statusCode).send({ message: statusCode === 500 ? 'Error on server' : message });
   return next();
 });
 

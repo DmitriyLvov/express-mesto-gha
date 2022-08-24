@@ -3,7 +3,6 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const { system } = require('../constants/system');
 const NotFoundError = require('../errors/not-found-err');
-const AnotherError = require('../errors/another-err');
 
 const { DEV_SECRET } = system;
 const CREATED_STATUS = 201;
@@ -11,7 +10,7 @@ const CREATED_STATUS = 201;
 module.exports.getAllUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch((err) => next(new AnotherError(`Error "in get all users" process: ${err.message}`)));
+    .catch(next);
 };
 
 module.exports.getUserById = (req, res, next) => {
@@ -25,7 +24,7 @@ module.exports.getUserById = (req, res, next) => {
         res.send(user);
       }
     })
-    .catch((err) => next(new AnotherError(`Error in "get user by id" process: ${err.message}`)));
+    .catch(next);
 };
 
 module.exports.createUser = (req, res, next) => {
@@ -49,7 +48,7 @@ module.exports.createUser = (req, res, next) => {
         delete result.password;
         return res.status(CREATED_STATUS).send(result);
       })
-      .catch((err) => next(new AnotherError(`Error in "create user" process: ${err.message}`)));
+      .catch(next);
   });
 };
 
@@ -62,7 +61,7 @@ module.exports.getUserInfo = (req, res, next) => {
       }
       res.send(user);
     })
-    .catch((err) => next(new AnotherError(`Error in "get user info" process: ${err.message}`)));
+    .catch(next);
 };
 
 module.exports.updateUserInfo = (req, res, next) => {
@@ -76,7 +75,7 @@ module.exports.updateUserInfo = (req, res, next) => {
         res.send(user);
       }
     })
-    .catch((err) => next(new AnotherError(`Error in "update user info" process: ${err.message}`)));
+    .catch(next);
 };
 
 module.exports.updateAvatar = (req, res, next) => {
@@ -90,7 +89,7 @@ module.exports.updateAvatar = (req, res, next) => {
         res.send(user);
       }
     })
-    .catch((err) => next(new AnotherError(`Error in "update user avatar" process: ${err.message}`)));
+    .catch(next);
 };
 
 module.exports.login = (req, res, next) => {
@@ -103,5 +102,5 @@ module.exports.login = (req, res, next) => {
       const token = jwt.sign({ _id }, DEV_SECRET, { expiresIn: '7d' });
       res.send({ message: 'Success', token });
     })
-    .catch((err) => next(new AnotherError(`Error in login process: ${err.message}`)));
+    .catch(next);
 };
