@@ -1,7 +1,6 @@
 const Card = require('../models/card');
 const NotFoundError = require('../errors/not-found-err');
 const ForbidError = require('../errors/forbid-err');
-const AnotherError = require('../errors/another-err');
 const WrongDataError = require('../errors/wrong-data-err');
 
 const CREATED_STATUS = 201;
@@ -22,10 +21,9 @@ module.exports.createCard = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        next(new WrongDataError('Wrong data for new card creation process'));
-      } else {
-        next(new AnotherError(`Error in card creation process: ${err.message}`));
+        return next(new WrongDataError('Wrong data for new card creation process'));
       }
+      return next(err);
     });
 };
 
