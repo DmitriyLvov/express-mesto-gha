@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const { system } = require('../constants/system');
 const NotFoundError = require('../errors/not-found-err');
+const RepeatedEmailError = require('../errors/repeated-email-err');
+const AnotherError = require('../errors/another-err');
 
 const { DEV_SECRET } = system;
 const CREATED_STATUS = 201;
@@ -49,7 +51,12 @@ module.exports.createUser = (req, res, next) => {
         avatar,
         email,
       }))
-      .catch(next);
+      .catch((err) => {
+        if (err.code === 11000) {
+          return next(new RepeatedEmailError('This email existed. You need to use unique email.'));
+        }
+        return next(new AnotherError('Error in "create new user" process'));
+      });
   });
 };
 

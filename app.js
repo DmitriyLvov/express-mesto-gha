@@ -58,9 +58,6 @@ app.use((req, res, next) => {
 
 // Центральная обработка ошибок
 app.use((err, req, res, next) => {
-  if (err.code === 11000) {
-    return res.status(409).send({ message: 'This email existed. You need to use unique email.' });
-  }
   if (err.errors) {
     const { message, reason } = Object.values(err.errors)[0].properties;
     return res.status(reason.statusCode).send({ message });
