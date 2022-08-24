@@ -43,11 +43,12 @@ module.exports.createUser = (req, res, next) => {
       email,
       password: hash,
     })
-      .then((newUser) => {
-        const result = { ...newUser._doc };
-        delete result.password;
-        return res.status(CREATED_STATUS).send(result);
-      })
+      .then(() => res.status(CREATED_STATUS).send({
+        name,
+        about,
+        avatar,
+        email,
+      }))
       .catch(next);
   });
 };
